@@ -1,0 +1,1363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gaming Platform Popularity Analysis</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/15.7.1/nouislider.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/15.7.1/nouislider.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #C8DFE7;
+            color: #0d0c0c;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: #e5e5e5;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-top: 0;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .platform-line {
+            fill: none;
+            stroke-width: 2;
+            opacity: 0.8;
+            transition: opacity 0.2s, stroke-width 0.2s;
+        }
+        .platform-line:hover, .platform-line.highlighted {
+            stroke-width: 4;
+            opacity: 1;
+        }
+        .platform-line.dimmed {
+            opacity: 0.2;
+        }
+        .axis-label {
+            font-size: 12px;
+            font-weight: bold;
+        }
+        #controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #f0f0f0;
+            border-radius: 6px;
+        }
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        label {
+            font-weight: bold;
+            font-size: 14px;
+        }
+        select, button {
+            padding: 8px 12px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 14px;
+            background-color: white;
+        }
+        button {
+            cursor: pointer;
+            background-color: #dd2020;
+            color: white;
+            border: none;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #dd2020;
+        }
+        .loading {
+            text-align: center;
+            font-size: 18px;
+            padding: 50px;
+        }
+        .tooltip {
+            position: absolute;
+            padding: 12px;
+            background-color: rgba(255, 255, 255, 0.95);
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            pointer-events: none;
+            font-size: 13px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+            max-width: 300px;
+            z-index: 100;
+        }
+        .tooltip h3 {
+            margin-top: 0;
+            margin-bottom: 8px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 5px;
+        }
+        .tooltip table {
+            margin: 0;
+            border-collapse: collapse;
+            width: 100%;
+        }
+        .tooltip td {
+            padding: 3px 0;
+        }
+        .tooltip td:first-child {
+            font-weight: bold;
+            padding-right: 15px;
+        }
+        .legend-item {
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+        .legend-item.dimmed {
+            opacity: 0.5;
+        }
+        .legend-item:hover {
+            opacity: 1;
+        }
+        #year-slider {
+            margin: 10px 0 30px;
+            height: 10px;
+        }
+        .noUi-connect {
+            background: #0075ff;
+        }
+        
+        .noUi-handle {
+            border-radius: 50%;
+            background-color: white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+            width: 18px !important;
+            height: 18px !important;
+            right: -9px !important;
+            top: -5px !important;
+        }
+        .noUi-handle:before, .noUi-handle:after {
+            display: none;
+        }
+        .visualization-container {
+            position: relative;
+        }
+        .tabs {
+            display: flex;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #ddd;
+        }
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            background-color: #f5f5f5;
+            border: 1px solid #ddd;
+            border-bottom: none;
+            border-radius: 4px 4px 0 0;
+            margin-right: 5px;
+        }
+        .tab.active {
+            background-color: white;
+            font-weight: bold;
+            border-bottom-color: white;
+            margin-bottom: -1px;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .vis-title {
+            text-align: center;
+            font-weight: bold;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+        #bar-chart-container {
+            position: relative;
+        }
+        .year-label {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 28px;
+            font-weight: bold;
+            color: #a5a2a2;
+        }
+        .playback-controls {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 10px 0;
+        }
+        .playback-controls button {
+            padding: 5px 15px;
+        }
+        .stats-panel {
+            background-color: #f9f9f9;
+            border-radius: 6px;
+            padding: 15px;
+            margin-top: 20px;
+            border: 1px solid #eee;
+        }
+        .stats-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 5px;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 15px;
+        }
+        .stat-card {
+            background-color: white;
+            border-radius: 6px;
+            padding: 15px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            border: 1px solid #eee;
+        }
+        .highlight-year {
+            stroke-dasharray: 3,3;
+            stroke: #a5a2a2;
+        }
+        @media (max-width: 768px) {
+            .controls {
+                flex-direction: column;
+            }
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        @font-face {
+            font-family: SuperPixel;
+            src: url(Font/SuperPixel-m2L8j.ttf);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Gaming Platform Popularity Analysis</h1>
+
+        <div id="controls">
+            <div class="control-group">
+                <label for="region-select">Region:</label>
+                <select id="region-select">
+                    <option value="global">Global</option>
+                    <option value="na">North America</option>
+                    <option value="eu">Europe</option>
+                    <option value="jp">Japan</option>
+                    <option value="other">Other Regions</option>
+                </select>
+            </div>
+
+            <div class="control-group">
+                <label for="genre-select">Genre Filter (Optional):</label>
+                <select id="genre-select">
+                    <option value="all">All Genres</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label for="publisher-select">Publisher Filter (Optional):</label>
+                <select id="publisher-select">
+                    <option value="all">All Publishers</option>
+                </select>
+            </div>
+
+            <div class="control-group">
+                <label for="platform-count">Top Platforms:</label>
+                <select id="platform-count">
+                    <option value="0">All Platforms</option>
+                    <option value="5">Top 5</option>
+                    <option value="10" selected>Top 10</option>
+                    <option value="15">Top 15</option>
+                    <option value="20">Top 20</option>
+                </select>
+            </div>
+
+            <div class="control-group">
+                <label>Actions:</label>
+                <button id="reset-highlights">Reset Selection</button>
+            </div>
+        </div>
+
+        <div class="control-group" style="margin-bottom: 20px;">
+            <label for="year-slider">Year Range:</label>
+            <div id="year-slider"></div>
+            <div style="display: flex; justify-content: space-between; margin-top: 5px;">
+                <span id="year-start"></span>
+                <span id="year-end"></span>
+            </div>
+        </div>
+
+        <div class="control-group">
+            <label for="speed-slider">Animation Speed for Bar Chart Race:</label>
+            <input type="range" id="speed-slider" min="600" max="1600" step="100" value="800">
+            <span id="speed-value">800 ms</span>
+        </div>
+
+        <div class="tabs">
+            <div class="tab active" data-tab="line-chart">Line Chart</div>
+            <div class="tab" data-tab="bar-chart">Bar Chart Race</div>
+            <div class="tab" data-tab="stacked-area">Market Share</div>
+        </div>
+
+        <div class="visualization-container">
+            <div id="line-chart" class="tab-content active">
+                <div class="vis-title">Gaming Platform Sales Over Time</div>
+                <div id="line-vis"></div>
+            </div>
+
+            <div id="bar-chart" class="tab-content">
+                <div class="vis-title">Platform Sales Ranking</div>
+                <div class="playback-controls">
+                    <button id="play-btn">Play</button>
+                    <button id="pause-btn">Pause</button>
+                    <button id="restart-btn">Restart</button>
+                </div>
+                <div id="bar-chart-container">
+                    <div class="year-label"></div>
+                    <div id="bar-vis"></div>
+                </div>
+            </div>
+
+            <div id="stacked-area" class="tab-content">
+                <div class="vis-title">Platform Market Share Over Time</div>
+                <div id="area-vis"></div>
+            </div>
+        </div>
+
+        <div class="stats-panel">
+            <div class="stats-title">Key Insights</div>
+            <div class="stats-grid" id="stats-grid">
+                <div class="loading">Loading statistics...</div>
+            </div>
+        </div>
+    </div>
+    <script>
+        // Constants and configuration
+        const WIDTH = 960;
+        const HEIGHT = 500;
+        const MARGIN = { top: 40, right: 200, bottom: 60, left: 80 };
+        const TRANSITION_DURATION = 750;
+        const BAR_HEIGHT = 30;
+        const BAR_CHART_TOP_COUNT = 10;
+        var ANIMATION_SPEED = 1300; // ms per year for bar chart race
+
+        // Sample CSV data URL - replace with actual path to your data
+        const csvUrl = 'static/vgsales.csv';
+
+        // Global variables for state
+        let cleanData = [];
+        let currentRegion = 'global';
+        let selectedGenre = 'all';
+        let selectedPublisher = 'all';
+        let selectedPlatforms = new Set();
+        let allPlatforms = [];
+        let topPlatformsCount = 10;
+        let yearRange = [1980, 2020];
+        let fullYearRange = [1980, 2020];
+        let animationInterval = null;
+        let currentAnimationYear = 0;
+        let isPlaying = false;
+
+        // Create tooltip
+        const tooltip = d3.select('body').append('div')
+            .attr('class', 'tooltip')
+            .style('opacity', 0);
+
+        // Set up SVG elements for each visualization
+        const lineSvg = d3.select('#line-vis')
+            .append('svg')
+            .attr('width', WIDTH)
+            .attr('height', HEIGHT);
+
+        const barSvg = d3.select('#bar-vis')
+            .append('svg')
+            .attr('width', WIDTH)
+            .attr('height', HEIGHT);
+
+        const areaSvg = d3.select('#area-vis')
+            .append('svg')
+            .attr('width', WIDTH)
+            .attr('height', HEIGHT);
+
+        // Initialize legends
+        const lineLegend = lineSvg.append('g')
+            .attr('class', 'legend')
+            .attr('transform', `translate(${WIDTH - MARGIN.right + 20}, ${MARGIN.top})`);
+
+        const areaLegend = areaSvg.append('g')
+            .attr('class', 'legend')
+            .attr('transform', `translate(${WIDTH - MARGIN.right + 20}, ${MARGIN.top})`);
+
+        // Add title and axis labels to line chart
+        lineSvg.append('text')
+            .attr('class', 'axis-label')
+            .attr('x', WIDTH / 2)
+            .attr('y', HEIGHT - 10)
+            .attr('text-anchor', 'middle')
+            .text('Year');
+
+        lineSvg.append('text')
+            .attr('class', 'axis-label')
+            .attr('transform', 'rotate(-90)')
+            .attr('x', -(HEIGHT / 2))
+            .attr('y', 25)
+            .attr('text-anchor', 'middle')
+            .text('Sales (millions)');
+
+        // Add title and axis labels to area chart
+        areaSvg.append('text')
+            .attr('class', 'axis-label')
+            .attr('x', WIDTH / 2)
+            .attr('y', HEIGHT - 10)
+            .attr('text-anchor', 'middle')
+            .text('Year');
+
+        areaSvg.append('text')
+            .attr('class', 'axis-label')
+            .attr('transform', 'rotate(-90)')
+            .attr('x', -(HEIGHT / 2))
+            .attr('y', 25)
+            .attr('text-anchor', 'middle')
+            .text('Market Share (%)');
+
+        // Add title and axis labels to bar chart
+        barSvg.append('text')
+            .attr('class', 'axis-label')
+            .attr('x', WIDTH / 2)
+            .attr('y', HEIGHT - 10)
+            .attr('text-anchor', 'middle')
+            .text('Sales (millions)');
+
+        // Helper function to filter data based on current selections
+        function filterData(data) {
+            return data.filter(d => {
+                const genreMatch = selectedGenre === 'all' || d.genre === selectedGenre;
+                const publisherMatch = selectedPublisher === 'all' || d.publisher === selectedPublisher;
+                const yearMatch = d.year >= yearRange[0] && d.year <= yearRange[1];
+                return genreMatch && publisherMatch && yearMatch;
+            });
+        }
+
+        // Function to get top platforms by total sales
+        function getTopPlatforms(data, regionKey, count) {
+            if (count === 0) return allPlatforms;
+
+            const platformSales = {};
+            data.forEach(d => {
+                if (!platformSales[d.platform]) platformSales[d.platform] = 0;
+                platformSales[d.platform] += d[regionKey];
+            });
+
+            return Object.entries(platformSales)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, count)
+                .map(d => d[0]);
+        }
+
+        // Function to aggregate data by platform and year for line chart
+        function aggregateDataByPlatformYear(data, regionKey) {
+            // Group by platform and year, sum sales
+            const grouped = d3.rollup(
+                data,
+                v => d3.sum(v, d => d[regionKey]),
+                d => d.platform,
+                d => d.year
+            );
+
+            // Get top platforms
+            const topPlatforms = getTopPlatforms(data, regionKey, topPlatformsCount);
+
+            // Convert to array format for easier use
+            const result = [];
+            grouped.forEach((yearMap, platform) => {
+                if (!topPlatforms.includes(platform)) return;
+
+                const platformData = [];
+                yearMap.forEach((sales, year) => {
+                    platformData.push({ platform, year, sales });
+                });
+
+                // Fill in missing years with zero sales
+                const years = platformData.map(d => d.year);
+                for (let year = yearRange[0]; year <= yearRange[1]; year++) {
+                    if (!years.includes(year)) {
+                        platformData.push({ platform, year, sales: 0 });
+                    }
+                }
+
+                // Sort by year
+                platformData.sort((a, b) => a.year - b.year);
+
+                // Only add platforms with sufficient data points
+                if (platformData.length > 0) {
+                    result.push({
+                        platform: platform,
+                        values: platformData
+                    });
+                }
+            });
+
+            return result;
+        }
+
+        // Function to aggregate data by year for bar chart race
+        function aggregateDataByYear(data, regionKey) {
+            const result = {};
+
+            // Group by year and platform
+            const grouped = d3.rollup(
+                data,
+                v => d3.sum(v, d => d[regionKey]),
+                d => d.year,
+                d => d.platform
+            );
+
+            grouped.forEach((platformMap, year) => {
+                // Convert to array and sort by sales
+                const yearData = Array.from(platformMap, ([platform, sales]) => ({ platform, sales }))
+                    .sort((a, b) => b.sales - a.sales)
+                    .slice(0, BAR_CHART_TOP_COUNT);
+
+                result[year] = yearData;
+            });
+
+            return result;
+        }
+
+        // Function to aggregate data for stacked area chart
+        function aggregateDataForArea(data, regionKey) {
+            // Group by year and platform
+            const grouped = d3.rollup(
+                data,
+                v => d3.sum(v, d => d[regionKey]),
+                d => d.year,
+                d => d.platform
+            );
+
+            // Get top platforms
+            const topPlatforms = getTopPlatforms(data, regionKey, topPlatformsCount);
+
+            // Create array of objects by year
+            const yearData = [];
+            const allYears = Array.from(grouped.keys()).sort();
+
+            allYears.forEach(year => {
+                if (year < yearRange[0] || year > yearRange[1]) return;
+
+                const yearObj = { year };
+                let yearTotal = 0;
+
+                // Calculate total sales for the year
+                grouped.get(year).forEach((sales, platform) => {
+                    if (topPlatforms.includes(platform)) {
+                        yearTotal += sales;
+                    }
+                });
+
+                // Calculate percentage for each platform
+                topPlatforms.forEach(platform => {
+                    const sales = grouped.get(year)?.get(platform) || 0;
+                    yearObj[platform] = (sales / yearTotal) * 100 || 0;
+                });
+
+                yearData.push(yearObj);
+            });
+
+            return {
+                years: yearData,
+                platforms: topPlatforms
+            };
+        }
+
+        // Function to update line chart
+        function updateLineChart() {
+            const filteredData = filterData(cleanData);
+            const aggregatedData = aggregateDataByPlatformYear(filteredData, currentRegion);
+
+            // Update scales
+            const xScale = d3.scaleLinear()
+                .domain(yearRange)
+                .range([MARGIN.left, WIDTH - MARGIN.right]);
+
+            const maxSales = d3.max(aggregatedData, d => d3.max(d.values, v => v.sales)) || 1;
+            const yScale = d3.scaleLinear()
+                .domain([0, maxSales * 1.1]) // Add 10% padding
+                .range([HEIGHT - MARGIN.bottom, MARGIN.top]);
+
+            // Color scale for platforms
+            const colorScale = d3.scaleOrdinal()
+                .domain(allPlatforms)
+                .range(d3.schemeCategory10);
+
+            // Update axes
+            lineSvg.selectAll('.x-axis').remove();
+            lineSvg.selectAll('.y-axis').remove();
+
+            lineSvg.append('g')
+                .attr('class', 'x-axis')
+                .attr('transform', `translate(0, ${HEIGHT - MARGIN.bottom})`)
+                .call(d3.axisBottom(xScale).tickFormat(d3.format('d')));
+
+            lineSvg.append('g')
+                .attr('class', 'y-axis')
+                .attr('transform', `translate(${MARGIN.left}, 0)`)
+                .call(d3.axisLeft(yScale));
+
+            // Line generator
+            const line = d3.line()
+                .x(d => xScale(d.year))
+                .y(d => yScale(d.sales))
+                .curve(d3.curveMonotoneX);
+
+            // Update lines
+            const lines = lineSvg.selectAll('.platform-line')
+                .data(aggregatedData, d => d.platform);
+
+            // Remove old lines
+            lines.exit().remove();
+
+            // Add new lines
+            lines.enter()
+                .append('path')
+                .attr('class', 'platform-line')
+                .attr('data-platform', d => d.platform)
+                .merge(lines)
+                .attr('stroke', d => colorScale(d.platform))
+                .transition().duration(TRANSITION_DURATION)
+                .attr('d', d => line(d.values));
+
+            // Update highlighted state
+            updateLineHighlights();
+
+            // Update legend
+            updateLineLegend(aggregatedData, colorScale);
+
+            // Add interactivity
+            lineSvg.selectAll('.platform-line')
+                .on('mouseover', function(event, d) {
+                    handleLineHover(event, d, this);
+                })
+                .on('mouseout', function() {
+                    if (selectedPlatforms.size === 0) {
+                        resetHighlighting();
+                    }
+                    tooltip.transition().duration(500).style('opacity', 0);
+                })
+                .on('click', function(event, d) {
+                    handlePlatformClick(d.platform);
+                });
+        }
+
+        // Function to update the highlights based on selected platforms
+        function updateLineHighlights() {
+            if (selectedPlatforms.size === 0) {
+                lineSvg.selectAll('.platform-line')
+                    .classed('highlighted', false)
+                    .classed('dimmed', false);
+
+                lineLegend.selectAll('.legend-item')
+                    .classed('dimmed', false);
+                return;
+            }
+
+            lineSvg.selectAll('.platform-line')
+                .classed('highlighted', d => selectedPlatforms.has(d.platform))
+                .classed('dimmed', d => !selectedPlatforms.has(d.platform));
+
+            lineLegend.selectAll('.legend-item')
+                .classed('dimmed', d => !selectedPlatforms.has(d));
+        }
+
+        // Handle line hover event
+        function handleLineHover(event, d, element) {
+            // Highlight if no selections or this platform is selected
+            if (selectedPlatforms.size === 0 || selectedPlatforms.has(d.platform)) {
+                d3.select(element).classed('highlighted', true);
+            }
+
+            // Show tooltip
+            const platformData = d.values.filter(v => v.year >= yearRange[0] && v.year <= yearRange[1]);
+            const totalSales = platformData.reduce((sum, v) => sum + v.sales, 0).toFixed(2);
+            const peakSales = d3.max(platformData, v => v.sales).toFixed(2);
+            const peakYear = platformData.find(v => v.sales === d3.max(platformData, p => p.sales)).year;
+
+            tooltip.transition().duration(200).style('opacity', .9);
+            tooltip.html(`
+                <h3>${d.platform}</h3>
+                <table>
+                    <tr><td>Total Sales:</td><td>${totalSales} million units</td></tr>
+                    <tr><td>Peak Sales:</td><td>${peakSales} million (${peakYear})</td></tr>
+                    <tr><td>Active Years:</td><td>${d3.min(platformData, v => v.year)} - ${d3.max(platformData, v => v.year)}</td></tr>
+                </table>
+                <p style="margin-top:5px;font-size:11px;">Click to ${selectedPlatforms.has(d.platform) ? 'deselect' : 'highlight'}</p>
+            `)
+                .style('left', (event.pageX + 10) + 'px')
+                .style('top', (event.pageY - 28) + 'px');
+        }
+
+        // Handle platform click event
+        function handlePlatformClick(platform) {
+            // Toggle selection
+            if (selectedPlatforms.has(platform)) {
+                selectedPlatforms.delete(platform);
+            } else {
+                selectedPlatforms.add(platform);
+            }
+
+            // Update visualizations
+            updateLineHighlights();
+        }
+
+        // Reset highlighting
+        function resetHighlighting() {
+            selectedPlatforms.clear();
+
+            lineSvg.selectAll('.platform-line')
+                .classed('highlighted', false)
+                .classed('dimmed', false);
+
+            lineLegend.selectAll('.legend-item')
+                .classed('dimmed', false);
+        }
+
+        // Update line chart legend
+        function updateLineLegend(data, colorScale) {
+            // Clear previous legend
+            lineLegend.selectAll('*').remove();
+
+            // Add legend items
+            data.forEach((d, i) => {
+                const legendItem = lineLegend.append('g')
+                    .attr('class', 'legend-item')
+                    .attr('data-platform', d.platform)
+                    .attr('transform', `translate(0, ${i * 20})`)
+                    .on('click', () => handlePlatformClick(d.platform))
+                    .on('mouseover', function() {
+                        // Highlight corresponding line
+                        lineSvg.selectAll('.platform-line')
+                            .filter(line => line.platform === d.platform)
+                            .classed('highlighted', true);
+
+                        d3.select(this).style('opacity', 1);
+                    })
+                    .on('mouseout', function() {
+                        if (selectedPlatforms.size === 0) {
+                            lineSvg.selectAll('.platform-line')
+                                .classed('highlighted', false);
+                        } else {
+                            lineSvg.selectAll('.platform-line')
+                                .classed('highlighted', line => selectedPlatforms.has(line.platform));
+                        }
+                    });
+
+                legendItem.append('rect')
+                    .attr('width', 15)
+                    .attr('height', 15)
+                    .attr('fill', colorScale(d.platform));
+
+                legendItem.append('text')
+                    .attr('x', 20)
+                    .attr('y', 12)
+                    .text(d.platform);
+            });
+        }
+
+        // Function to update bar chart race for a specific year
+        function updateBarChartForYear(year) {
+            // Update year label
+            d3.select('.year-label').text(year);
+
+            const filteredData = filterData(cleanData);
+            const aggregatedByYear = aggregateDataByYear(filteredData, currentRegion);
+
+            // Skip if no data for this year
+            if (!aggregatedByYear[year] || aggregatedByYear[year].length === 0) {
+                return;
+            }
+
+            const yearData = aggregatedByYear[year].slice(0, BAR_CHART_TOP_COUNT);
+
+            // Sort data
+            yearData.sort((a, b) => a.sales - b.sales);
+
+            // Update scales
+            const maxSales = d3.max(yearData, d => d.sales) * 1.1;
+            const xScale = d3.scaleLinear()
+                .domain([0, maxSales])
+                .range([MARGIN.left, WIDTH - MARGIN.right]);
+
+            const yScale = d3.scaleBand()
+                .domain(yearData.map(d => d.platform))
+                .range([MARGIN.top, MARGIN.top + yearData.length * BAR_HEIGHT])
+                .padding(0.1);
+
+            // Color scale for platforms
+            const colorScale = d3.scaleOrdinal()
+                .domain(allPlatforms)
+                .range(d3.schemeCategory10);
+
+            // Update axes
+            barSvg.selectAll('.x-axis').remove();
+
+            barSvg.append('g')
+                .attr('class', 'x-axis')
+                .attr('transform', `translate(0, ${MARGIN.top})`)
+                .call(d3.axisTop(xScale).ticks(5));
+
+            // Update bars
+            const bars = barSvg.selectAll('.bar')
+                .data(yearData, d => d.platform);
+
+            // Remove old bars
+            bars.exit()
+                .transition()
+                .duration(TRANSITION_DURATION/2)
+                .attr('width', 0)
+                .remove();
+
+            // Add new bars
+            const enterBars = bars.enter()
+                .append('rect')
+                .attr('class', 'bar')
+                .attr('height', yScale.bandwidth())
+                .attr('y', d => yScale(d.platform))
+                .attr('x', MARGIN.left)
+                .attr('width', 0)
+                .attr('fill', d => colorScale(d.platform));
+
+            // Update existing and new bars
+            enterBars.merge(bars)
+                .transition()
+                .duration(TRANSITION_DURATION)
+                .attr('width', d => xScale(d.sales) - MARGIN.left)
+                .attr('y', d => yScale(d.platform))
+                .attr('fill', d => colorScale(d.platform));
+
+            // Add platform labels
+            const labels = barSvg.selectAll('.bar-label')
+                .data(yearData, d => d.platform);
+
+            labels.exit().remove();
+
+            const enterLabels = labels.enter()
+                .append('text')
+                .attr('class', 'bar-label')
+                .attr('y', d => yScale(d.platform) + yScale.bandwidth() / 2 + 5)
+                .attr('x', MARGIN.left + 5)
+                .text(d => d.platform);
+
+            enterLabels.merge(labels)
+                .transition()
+                .duration(TRANSITION_DURATION)
+                .attr('y', d => yScale(d.platform) + yScale.bandwidth() / 2 + 5)
+                .text(d => `${d.platform}: ${d.sales.toFixed(2)}M`);
+
+            // Add sales value labels
+            const valueLabels = barSvg.selectAll('.value-label')
+                .data(yearData, d => d.platform);
+
+            valueLabels.exit().remove();
+
+            const enterValueLabels = valueLabels.enter()
+                .append('text')
+                .attr('class', 'value-label')
+                .attr('text-anchor', 'end')
+                .attr('y', d => yScale(d.platform) + yScale.bandwidth() / 2 + 5)
+                .attr('x', d => xScale(d.sales) - 5);
+
+            enterValueLabels.merge(valueLabels)
+                .transition()
+                .duration(TRANSITION_DURATION)
+                .attr('y', d => yScale(d.platform) + yScale.bandwidth() / 2 + 5)
+                .attr('x', d => xScale(d.sales) - 5)
+                // .text(d => d.sales.toFixed(2));
+        }
+
+        // Function to update stacked area chart
+        function updateStackedAreaChart() {
+            const filteredData = filterData(cleanData);
+            const areaData = aggregateDataForArea(filteredData, currentRegion);
+
+            if (areaData.years.length === 0) {
+                areaSvg.append('text')
+                    .attr('x', WIDTH / 2)
+                    .attr('y', HEIGHT / 2)
+                    .attr('text-anchor', 'middle')
+                    .text('No data available for the selected filters');
+                return;
+            }
+
+            // Remove any previous no-data message
+            areaSvg.selectAll('text').filter(function() {
+                return this.textContent === 'No data available for the selected filters';
+            }).remove();
+
+            // Define color scale
+            const colorScale = d3.scaleOrdinal()
+                .domain(areaData.platforms)
+                .range(d3.schemeCategory10);
+
+            // Create stacked data
+            const stack = d3.stack()
+                .keys(areaData.platforms)
+                .order(d3.stackOrderNone)
+                .offset(d3.stackOffsetExpand);
+
+            const series = stack(areaData.years);
+
+            // Create scales
+            const xScale = d3.scaleLinear()
+                .domain(yearRange)
+                .range([MARGIN.left, WIDTH - MARGIN.right]);
+
+            const yScale = d3.scaleLinear()
+                .domain([0, 1])  // For percentages (0-100%)
+                .range([HEIGHT - MARGIN.bottom, MARGIN.top]);
+
+            // Create the area generator
+            const area = d3.area()
+                .x(d => xScale(d.data.year))
+                .y0(d => yScale(d[0]))
+                .y1(d => yScale(d[1]))
+                .curve(d3.curveMonotoneX);
+
+            // Update axes
+            areaSvg.selectAll('.x-axis, .y-axis').remove();
+
+            areaSvg.append('g')
+                .attr('class', 'x-axis')
+                .attr('transform', `translate(0, ${HEIGHT - MARGIN.bottom})`)
+                .call(d3.axisBottom(xScale).tickFormat(d3.format('d')));
+
+            areaSvg.append('g')
+                .attr('class', 'y-axis')
+                .attr('transform', `translate(${MARGIN.left}, 0)`)
+                .call(d3.axisLeft(yScale).tickFormat(d => `${(d * 100).toFixed(0)}%`));
+
+            // Update areas
+            const areas = areaSvg.selectAll('.platform-area')
+                .data(series, d => d.key);
+
+            areas.exit().remove();
+
+            areas.enter()
+                .append('path')
+                .attr('class', 'platform-area')
+                .attr('fill', d => colorScale(d.key))
+                .attr('opacity', 0.7)
+                .merge(areas)
+                .transition()
+                .duration(TRANSITION_DURATION)
+                .attr('d', area);
+
+            // Update legend
+            updateAreaLegend(areaData.platforms, colorScale);
+
+            // Add interactivity
+            areaSvg.selectAll('.platform-area')
+                .on('mouseover', function(event, d) {
+                    d3.select(this).attr('opacity', 1);
+
+                    tooltip.transition().duration(200).style('opacity', .9);
+                    tooltip.html(`
+                        <h3>${d.key}</h3>
+                        <p>Average market share: ${(d3.mean(d, p => p[1] - p[0]) * 100).toFixed(2)}%</p>
+                        <p>Peak market share: ${(d3.max(d, p => p[1] - p[0]) * 100).toFixed(2)}%</p>
+                    `)
+                        .style('left', (event.pageX + 10) + 'px')
+                        .style('top', (event.pageY - 28) + 'px');
+                })
+                .on('mouseout', function() {
+                    d3.select(this).attr('opacity', 0.7);
+                    tooltip.transition().duration(500).style('opacity', 0);
+                });
+        }
+
+        // Update area chart legend
+        function updateAreaLegend(platforms, colorScale) {
+            // Clear previous legend
+            areaLegend.selectAll('*').remove();
+
+            // Add legend items
+            platforms.forEach((platform, i) => {
+                const legendItem = areaLegend.append('g')
+                    .attr('class', 'legend-item')
+                    .attr('transform', `translate(0, ${i * 20})`);
+
+                legendItem.append('rect')
+                    .attr('width', 15)
+                    .attr('height', 15)
+                    .attr('fill', colorScale(platform));
+
+                legendItem.append('text')
+                    .attr('x', 20)
+                    .attr('y', 12)
+                    .text(platform);
+            });
+        }
+
+        // Function to animate the bar chart race
+        function startBarChartAnimation() {
+                if (isPlaying) return;
+
+                isPlaying = true;
+                const filteredData = filterData(cleanData);
+                const aggregatedByYear = aggregateDataByYear(filteredData, currentRegion);
+                const validYears = Object.keys(aggregatedByYear)
+                    .map(Number)
+                    .filter(year => year >= yearRange[0] && year <= yearRange[1])
+                    .sort((a, b) => a - b);
+
+                if (validYears.length === 0) {
+                    return;
+                }
+
+                // Start from current year or first year
+                currentAnimationYear = currentAnimationYear || validYears[0];
+                let yearIndex = validYears.indexOf(currentAnimationYear);
+
+                if (yearIndex === -1 || yearIndex === validYears.length - 1) {
+                    yearIndex = 0;
+                    currentAnimationYear = validYears[0];
+                }
+
+                // Clear previous interval if any
+                if (animationInterval) clearInterval(animationInterval);
+
+                // Update initial frame
+                updateBarChartForYear(currentAnimationYear);
+
+                // Set animation interval
+                animationInterval = setInterval(() => {
+                    yearIndex++;
+
+                    if (yearIndex >= validYears.length) {
+                        yearIndex = 0;
+                        pauseAnimation(); // Stop at the end
+                        return;
+                    }
+
+                    currentAnimationYear = validYears[yearIndex];
+                    updateBarChartForYear(currentAnimationYear);
+                }, ANIMATION_SPEED);
+            }
+        // Function to pause animation
+        function pauseAnimation() {
+            isPlaying = false;
+            if (animationInterval) {
+                clearInterval(animationInterval);
+                animationInterval = null;
+            }
+        }
+
+        // Function to restart animation
+        function restartAnimation() {
+            pauseAnimation();
+            currentAnimationYear = 0;
+            startBarChartAnimation();
+        }
+
+        // Function to update insights stats panel
+        function updateStatsPanel() {
+            const filteredData = filterData(cleanData);
+            const regionKey = currentRegion;
+
+            // Calculate key statistics
+            const platformTotalSales = {};
+            filteredData.forEach(d => {
+                if (!platformTotalSales[d.platform]) platformTotalSales[d.platform] = 0;
+                platformTotalSales[d.platform] += d[regionKey];
+            });
+
+            const sortedPlatforms = Object.entries(platformTotalSales)
+                .sort((a, b) => b[1] - a[1]);
+
+            const totalSales = d3.sum(sortedPlatforms, d => d[1]);
+            const topPlatform = sortedPlatforms[0] || ['None', 0];
+
+            // Year with most releases
+            const releasesByYear = d3.rollup(
+                filteredData,
+                v => v.length,
+                d => d.year
+            );
+
+            const yearWithMostReleases = Array.from(releasesByYear.entries())
+                .sort((a, b) => b[1] - a[1])[0] || [0, 0];
+
+            // Platform with longest lifecycle
+            const platformLifecycles = {};
+            allPlatforms.forEach(platform => {
+                const platformGames = filteredData.filter(d => d.platform === platform);
+                if (platformGames.length > 0) {
+                    const years = platformGames.map(d => d.year).filter(y => y);
+                    platformLifecycles[platform] = {
+                        start: d3.min(years),
+                        end: d3.max(years),
+                        duration: d3.max(years) - d3.min(years) + 1
+                    };
+                }
+            });
+
+            const longestLifecyclePlatform = Object.entries(platformLifecycles)
+                .sort((a, b) => b[1].duration - a[1].duration)[0] || [null, { start: 0, end: 0, duration: 0 }];
+
+            // Update stats grid
+            const statsGrid = d3.select('#stats-grid');
+            statsGrid.html('');
+
+            // Add key stats cards
+            statsGrid.append('div')
+                .attr('class', 'stat-card')
+                .html(`
+                    <h3>Top Platform: ${topPlatform[0]}</h3>
+                    <p>Total Sales: ${topPlatform[1].toFixed(2)} million units</p>
+                    <p>Market Share: ${((topPlatform[1] / totalSales) * 100).toFixed(2)}%</p>
+                `);
+
+            statsGrid.append('div')
+                .attr('class', 'stat-card')
+                .html(`
+                    <h3>Total Market Size</h3>
+                    <p>${totalSales.toFixed(2)} million units</p>
+                    <p>${sortedPlatforms.length} active platforms</p>
+                `);
+
+            statsGrid.append('div')
+                .attr('class', 'stat-card')
+                .html(`
+                    <h3>Peak Year: ${yearWithMostReleases[0]}</h3>
+                    <p>${yearWithMostReleases[1]} titles released</p>
+                `);
+
+            if (longestLifecyclePlatform[0]) {
+                statsGrid.append('div')
+                    .attr('class', 'stat-card')
+                    .html(`
+                        <h3>Longest Platform Lifecycle</h3>
+                        <p>${longestLifecyclePlatform[0]}: ${longestLifecyclePlatform[1].duration} years</p>
+                        <p>(${longestLifecyclePlatform[1].start} - ${longestLifecyclePlatform[1].end})</p>
+                    `);
+            }
+        }
+
+        // Function to initialize the slider
+        function initializeYearSlider() {
+            const slider = document.getElementById('year-slider');
+
+            noUiSlider.create(slider, {
+                start: fullYearRange,
+                connect: true,
+                step: 1,
+                range: {
+                    'min': fullYearRange[0],
+                    'max': fullYearRange[1]
+                },
+                format: {
+                    to: value => Math.round(value),
+                    from: value => Math.round(value)
+                }
+            });
+
+            // Update labels
+            const yearStart = document.getElementById('year-start');
+            const yearEnd = document.getElementById('year-end');
+
+            slider.noUiSlider.on('update', function (values, handle) {
+                yearRange = [parseInt(values[0]), parseInt(values[1])];
+                yearStart.textContent = values[0];
+                yearEnd.textContent = values[1];
+
+                // Only update visualizations when slider is done moving
+                clearTimeout(window.sliderTimeout);
+                window.sliderTimeout = setTimeout(() => {
+                    updateVisualizations();
+                }, 100);
+            });
+        }
+
+        // Function to switch between tabs
+        function initializeTabs() {
+            d3.selectAll('.tab').on('click', function() {
+                const tab = d3.select(this);
+                const tabId = tab.attr('data-tab');
+
+                // Update active state
+                d3.selectAll('.tab').classed('active', false);
+                tab.classed('active', true);
+
+                // Show/hide content
+                d3.selectAll('.tab-content').classed('active', false);
+                d3.select(`#${tabId}`).classed('active', true);
+
+                // If switching to bar chart, update current frame
+                if (tabId === 'bar-chart' && currentAnimationYear) {
+                    updateBarChartForYear(currentAnimationYear);
+                }
+            });
+        }
+
+        // Update all visualizations based on current selections
+        function updateVisualizations() {
+            // Determine sales column based on selected region
+            switch (currentRegion) {
+                case 'na': currentRegion = 'NA_Sales'; break;
+                case 'eu': currentRegion = 'EU_Sales'; break;
+                case 'jp': currentRegion = 'JP_Sales'; break;
+                case 'other': currentRegion = 'Other_Sales'; break;
+                default: currentRegion = 'Global_Sales';
+            }
+
+            // Update each visualization
+            updateLineChart();
+            updateStackedAreaChart();
+
+            // Only update bar chart if visible
+            if (d3.select('#bar-chart').classed('active')) {
+                pauseAnimation();
+                if (currentAnimationYear) {
+                    updateBarChartForYear(currentAnimationYear);
+                } else {
+                    // Start with the middle year of the range
+                    const midYear = Math.floor((yearRange[0] + yearRange[1]) / 2);
+                    updateBarChartForYear(midYear);
+                    currentAnimationYear = midYear;
+                }
+            }
+
+            // Update stats panel
+            updateStatsPanel();
+        }
+
+        // Initialize the application
+        async function initialize() {
+            try {
+                // Load data
+                const rawData = await d3.csv(csvUrl);
+
+                // Clean and transform data
+                cleanData = rawData.map(d => {
+                    return {
+                        name: d.Name,
+                        platform: d.Platform,
+                        year: d.Year ? parseInt(d.Year) : null,
+                        genre: d.Genre,
+                        publisher: d.Publisher,
+                        NA_Sales: parseFloat(d.NA_Sales) || 0,
+                        EU_Sales: parseFloat(d.EU_Sales) || 0,
+                        JP_Sales: parseFloat(d.JP_Sales) || 0,
+                        Other_Sales: parseFloat(d.Other_Sales) || 0,
+                        Global_Sales: parseFloat(d.Global_Sales) || 0
+                    };
+                }).filter(d => d.year !== null);
+
+                // Extract all platforms
+                allPlatforms = [...new Set(cleanData.map(d => d.platform))];
+
+                // Extract all genres
+                const allGenres = [...new Set(cleanData.map(d => d.genre).filter(g => g))];
+
+                // Extract all publishers
+                const allPublishers = [...new Set(cleanData.map(d => d.publisher).filter(p => p))];
+
+                // Determine year range
+                const years = cleanData.map(d => d.year).filter(y => y);
+                fullYearRange = [d3.min(years), d3.max(years)];
+                yearRange = [...fullYearRange];
+
+                // Populate dropdowns
+                const genreSelect = document.getElementById('genre-select');
+                allGenres.sort().forEach(genre => {
+                    const option = document.createElement('option');
+                    option.value = genre;
+                    option.textContent = genre;
+                    genreSelect.appendChild(option);
+                });
+
+                const publisherSelect = document.getElementById('publisher-select');
+                allPublishers.sort().forEach(publisher => {
+                    const option = document.createElement('option');
+                    option.value = publisher;
+                    option.textContent = publisher;
+                    publisherSelect.appendChild(option);
+                });
+
+                // Set up event listeners
+                document.getElementById('region-select').addEventListener('change', function() {
+                    currentRegion = this.value;
+                    updateVisualizations();
+                });
+
+                document.getElementById('genre-select').addEventListener('change', function() {
+                    selectedGenre = this.value;
+                    updateVisualizations();
+                });
+
+                document.getElementById('publisher-select').addEventListener('change', function() {
+                    selectedPublisher = this.value;
+                    updateVisualizations();
+                });
+
+                document.getElementById('platform-count').addEventListener('change', function() {
+                    topPlatformsCount = parseInt(this.value);
+                    updateVisualizations();
+                });
+
+                document.getElementById('reset-highlights').addEventListener('click', function() {
+                    resetHighlighting();
+                    updateLineHighlights();
+                });
+
+                // Set up bar chart animation controls
+                document.getElementById('play-btn').addEventListener('click', startBarChartAnimation);
+                document.getElementById('pause-btn').addEventListener('click', pauseAnimation);
+                document.getElementById('restart-btn').addEventListener('click', restartAnimation);
+
+                // Add speed control listener
+                document.getElementById('speed-slider').addEventListener('input', function () {
+                    ANIMATION_SPEED = parseInt(this.value);
+                    document.getElementById('speed-value').textContent = `${ANIMATION_SPEED} ms`;
+                    // If animation is running, restart it with new speed
+                    if (isPlaying) {
+                        pauseAnimation();
+                        startBarChartAnimation();
+                    }
+                });
+
+                // Initialize UI elements
+                initializeYearSlider();
+                initializeTabs();
+
+                // Initial update
+                updateVisualizations();
+            } catch (error) {
+                console.error('Error initializing application:', error);
+                document.querySelector('.container').innerHTML = `
+                    <h1>Error Loading Data</h1>
+                    <p>There was a problem loading the visualization data. Please try again later.</p>
+                    <details>
+                        <summary>Technical Details</summary>
+                        <pre>${error.toString()}</pre>
+                    </details>
+                `;
+            }
+        }
+
+        // Start the application
+        initialize();
+    </script>
+</body>
+</html>
