@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -15,14 +16,16 @@
             background-color: #C8DFE7;
             color: #0d0c0c;
         }
+
         .container {
             max-width: 1200px;
             margin: 0 auto;
             background-color: #e5e5e5;
             border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
             padding: 20px;
         }
+
         h1 {
             text-align: center;
             color: #333;
@@ -30,23 +33,29 @@
             padding: 10px 0;
             border-bottom: 1px solid #eee;
         }
+
         .platform-line {
             fill: none;
             stroke-width: 2;
             opacity: 0.8;
             transition: opacity 0.2s, stroke-width 0.2s;
         }
-        .platform-line:hover, .platform-line.highlighted {
+
+        .platform-line:hover,
+        .platform-line.highlighted {
             stroke-width: 4;
             opacity: 1;
         }
+
         .platform-line.dimmed {
             opacity: 0.2;
         }
+
         .axis-label {
             font-size: 12px;
             font-weight: bold;
         }
+
         #controls {
             display: flex;
             flex-wrap: wrap;
@@ -56,22 +65,27 @@
             background-color: #f0f0f0;
             border-radius: 6px;
         }
+
         .control-group {
             display: flex;
             flex-direction: column;
             gap: 5px;
         }
+
         label {
             font-weight: bold;
             font-size: 14px;
         }
-        select, button {
+
+        select,
+        button {
             padding: 8px 12px;
             border: 1px solid #ccc;
             border-radius: 4px;
             font-size: 14px;
             background-color: white;
         }
+
         button {
             cursor: pointer;
             background-color: #dd2020;
@@ -79,14 +93,17 @@
             border: none;
             transition: background-color 0.3s;
         }
+
         button:hover {
             background-color: #dd2020;
         }
+
         .loading {
             text-align: center;
             font-size: 18px;
             padding: 50px;
         }
+
         .tooltip {
             position: absolute;
             padding: 12px;
@@ -95,66 +112,80 @@
             border-radius: 6px;
             pointer-events: none;
             font-size: 13px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
             max-width: 300px;
             z-index: 100;
         }
+
         .tooltip h3 {
             margin-top: 0;
             margin-bottom: 8px;
             border-bottom: 1px solid #eee;
             padding-bottom: 5px;
         }
+
         .tooltip table {
             margin: 0;
             border-collapse: collapse;
             width: 100%;
         }
+
         .tooltip td {
             padding: 3px 0;
         }
+
         .tooltip td:first-child {
             font-weight: bold;
             padding-right: 15px;
         }
+
         .legend-item {
             cursor: pointer;
             transition: opacity 0.2s;
         }
+
         .legend-item.dimmed {
             opacity: 0.5;
         }
+
         .legend-item:hover {
             opacity: 1;
         }
+
         #year-slider {
             margin: 10px 0 30px;
             height: 10px;
         }
+
         .noUi-connect {
             background: #0075ff;
         }
-        
+
         .noUi-handle {
             border-radius: 50%;
             background-color: white;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
             width: 18px !important;
             height: 18px !important;
             right: -9px !important;
             top: -5px !important;
         }
-        .noUi-handle:before, .noUi-handle:after {
+
+        .noUi-handle:before,
+        .noUi-handle:after {
             display: none;
         }
+
         .visualization-container {
             position: relative;
         }
+
         .tabs {
             display: flex;
             margin-bottom: 15px;
             border-bottom: 1px solid #ddd;
         }
+
         .tab {
             padding: 10px 20px;
             cursor: pointer;
@@ -164,27 +195,33 @@
             border-radius: 4px 4px 0 0;
             margin-right: 5px;
         }
+
         .tab.active {
             background-color: white;
             font-weight: bold;
             border-bottom-color: white;
             margin-bottom: -1px;
         }
+
         .tab-content {
             display: none;
         }
+
         .tab-content.active {
             display: block;
         }
+
         .vis-title {
             text-align: center;
             font-weight: bold;
             margin-bottom: 10px;
             font-size: 16px;
         }
+
         #bar-chart-container {
             position: relative;
         }
+
         .year-label {
             position: absolute;
             top: 10px;
@@ -193,15 +230,18 @@
             font-weight: bold;
             color: #a5a2a2;
         }
+
         .playback-controls {
             display: flex;
             justify-content: center;
             gap: 10px;
             margin: 10px 0;
         }
+
         .playback-controls button {
             padding: 5px 15px;
         }
+
         .stats-panel {
             background-color: #f9f9f9;
             border-radius: 6px;
@@ -209,46 +249,75 @@
             margin-top: 20px;
             border: 1px solid #eee;
         }
+
         .stats-title {
             font-weight: bold;
             margin-bottom: 10px;
             border-bottom: 1px solid #ddd;
             padding-bottom: 5px;
         }
+
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
             gap: 15px;
         }
+
         .stat-card {
             background-color: white;
             border-radius: 6px;
             padding: 15px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
             border: 1px solid #eee;
         }
+
         .highlight-year {
-            stroke-dasharray: 3,3;
+            stroke-dasharray: 3, 3;
             stroke: #a5a2a2;
         }
+
+        .btn {
+            text-decoration: none;
+            padding: 0.5rem;
+            border: 1px solid #333333;
+            border-radius: 5px;
+            background-color: #dd2020;
+            color: white;
+            text-align:center;
+            display:block; 
+            width:100px; 
+            margin:0 auto;
+            display: table;
+        }
+
         @media (max-width: 768px) {
             .controls {
                 flex-direction: column;
             }
+
             .stats-grid {
                 grid-template-columns: 1fr;
             }
         }
-        @font-face {
-            font-family: SuperPixel;
-            src: url(Font/SuperPixel-m2L8j.ttf);
-        }
     </style>
 </head>
+
 <body>
     <div class="container">
         <h1>Gaming Platform Popularity Analysis</h1>
-
+        <div id="DocVid">
+            <a class="btn"
+                href="https://youtu.be/E-zNsPtXlww" target="_blank">
+                Video
+            </a>
+<br>
+            <a class="btn"
+                href="https://indiana-my.sharepoint.com/:w:/g/personal/sambarks_iu_edu/ERuWkAKhenhLrpwjEjwmU1IB79prt5mP7_hkafuPXT5fQQ?e=to8EXp" target="_blank">
+                Documentation
+            </a>
+        </div>
+        <br>
+        <br>
         <div id="controls">
             <div class="control-group">
                 <label for="region-select">Region:</label>
@@ -647,16 +716,16 @@
 
             // Add interactivity
             lineSvg.selectAll('.platform-line')
-                .on('mouseover', function(event, d) {
+                .on('mouseover', function (event, d) {
                     handleLineHover(event, d, this);
                 })
-                .on('mouseout', function() {
+                .on('mouseout', function () {
                     if (selectedPlatforms.size === 0) {
                         resetHighlighting();
                     }
                     tooltip.transition().duration(500).style('opacity', 0);
                 })
-                .on('click', function(event, d) {
+                .on('click', function (event, d) {
                     handlePlatformClick(d.platform);
                 });
         }
@@ -745,7 +814,7 @@
                     .attr('data-platform', d.platform)
                     .attr('transform', `translate(0, ${i * 20})`)
                     .on('click', () => handlePlatformClick(d.platform))
-                    .on('mouseover', function() {
+                    .on('mouseover', function () {
                         // Highlight corresponding line
                         lineSvg.selectAll('.platform-line')
                             .filter(line => line.platform === d.platform)
@@ -753,7 +822,7 @@
 
                         d3.select(this).style('opacity', 1);
                     })
-                    .on('mouseout', function() {
+                    .on('mouseout', function () {
                         if (selectedPlatforms.size === 0) {
                             lineSvg.selectAll('.platform-line')
                                 .classed('highlighted', false);
@@ -824,7 +893,7 @@
             // Remove old bars
             bars.exit()
                 .transition()
-                .duration(TRANSITION_DURATION/2)
+                .duration(TRANSITION_DURATION / 2)
                 .attr('width', 0)
                 .remove();
 
@@ -883,7 +952,7 @@
                 .duration(TRANSITION_DURATION)
                 .attr('y', d => yScale(d.platform) + yScale.bandwidth() / 2 + 5)
                 .attr('x', d => xScale(d.sales) - 5)
-                // .text(d => d.sales.toFixed(2));
+            // .text(d => d.sales.toFixed(2));
         }
 
         // Function to update stacked area chart
@@ -901,7 +970,7 @@
             }
 
             // Remove any previous no-data message
-            areaSvg.selectAll('text').filter(function() {
+            areaSvg.selectAll('text').filter(function () {
                 return this.textContent === 'No data available for the selected filters';
             }).remove();
 
@@ -968,7 +1037,7 @@
 
             // Add interactivity
             areaSvg.selectAll('.platform-area')
-                .on('mouseover', function(event, d) {
+                .on('mouseover', function (event, d) {
                     d3.select(this).attr('opacity', 1);
 
                     tooltip.transition().duration(200).style('opacity', .9);
@@ -980,7 +1049,7 @@
                         .style('left', (event.pageX + 10) + 'px')
                         .style('top', (event.pageY - 28) + 'px');
                 })
-                .on('mouseout', function() {
+                .on('mouseout', function () {
                     d3.select(this).attr('opacity', 0.7);
                     tooltip.transition().duration(500).style('opacity', 0);
                 });
@@ -1011,49 +1080,49 @@
 
         // Function to animate the bar chart race
         function startBarChartAnimation() {
-                if (isPlaying) return;
+            if (isPlaying) return;
 
-                isPlaying = true;
-                const filteredData = filterData(cleanData);
-                const aggregatedByYear = aggregateDataByYear(filteredData, currentRegion);
-                const validYears = Object.keys(aggregatedByYear)
-                    .map(Number)
-                    .filter(year => year >= yearRange[0] && year <= yearRange[1])
-                    .sort((a, b) => a - b);
+            isPlaying = true;
+            const filteredData = filterData(cleanData);
+            const aggregatedByYear = aggregateDataByYear(filteredData, currentRegion);
+            const validYears = Object.keys(aggregatedByYear)
+                .map(Number)
+                .filter(year => year >= yearRange[0] && year <= yearRange[1])
+                .sort((a, b) => a - b);
 
-                if (validYears.length === 0) {
+            if (validYears.length === 0) {
+                return;
+            }
+
+            // Start from current year or first year
+            currentAnimationYear = currentAnimationYear || validYears[0];
+            let yearIndex = validYears.indexOf(currentAnimationYear);
+
+            if (yearIndex === -1 || yearIndex === validYears.length - 1) {
+                yearIndex = 0;
+                currentAnimationYear = validYears[0];
+            }
+
+            // Clear previous interval if any
+            if (animationInterval) clearInterval(animationInterval);
+
+            // Update initial frame
+            updateBarChartForYear(currentAnimationYear);
+
+            // Set animation interval
+            animationInterval = setInterval(() => {
+                yearIndex++;
+
+                if (yearIndex >= validYears.length) {
+                    yearIndex = 0;
+                    pauseAnimation(); // Stop at the end
                     return;
                 }
 
-                // Start from current year or first year
-                currentAnimationYear = currentAnimationYear || validYears[0];
-                let yearIndex = validYears.indexOf(currentAnimationYear);
-
-                if (yearIndex === -1 || yearIndex === validYears.length - 1) {
-                    yearIndex = 0;
-                    currentAnimationYear = validYears[0];
-                }
-
-                // Clear previous interval if any
-                if (animationInterval) clearInterval(animationInterval);
-
-                // Update initial frame
+                currentAnimationYear = validYears[yearIndex];
                 updateBarChartForYear(currentAnimationYear);
-
-                // Set animation interval
-                animationInterval = setInterval(() => {
-                    yearIndex++;
-
-                    if (yearIndex >= validYears.length) {
-                        yearIndex = 0;
-                        pauseAnimation(); // Stop at the end
-                        return;
-                    }
-
-                    currentAnimationYear = validYears[yearIndex];
-                    updateBarChartForYear(currentAnimationYear);
-                }, ANIMATION_SPEED);
-            }
+            }, ANIMATION_SPEED);
+        }
         // Function to pause animation
         function pauseAnimation() {
             isPlaying = false;
@@ -1191,7 +1260,7 @@
 
         // Function to switch between tabs
         function initializeTabs() {
-            d3.selectAll('.tab').on('click', function() {
+            d3.selectAll('.tab').on('click', function () {
                 const tab = d3.select(this);
                 const tabId = tab.attr('data-tab');
 
@@ -1296,27 +1365,27 @@
                 });
 
                 // Set up event listeners
-                document.getElementById('region-select').addEventListener('change', function() {
+                document.getElementById('region-select').addEventListener('change', function () {
                     currentRegion = this.value;
                     updateVisualizations();
                 });
 
-                document.getElementById('genre-select').addEventListener('change', function() {
+                document.getElementById('genre-select').addEventListener('change', function () {
                     selectedGenre = this.value;
                     updateVisualizations();
                 });
 
-                document.getElementById('publisher-select').addEventListener('change', function() {
+                document.getElementById('publisher-select').addEventListener('change', function () {
                     selectedPublisher = this.value;
                     updateVisualizations();
                 });
 
-                document.getElementById('platform-count').addEventListener('change', function() {
+                document.getElementById('platform-count').addEventListener('change', function () {
                     topPlatformsCount = parseInt(this.value);
                     updateVisualizations();
                 });
 
-                document.getElementById('reset-highlights').addEventListener('click', function() {
+                document.getElementById('reset-highlights').addEventListener('click', function () {
                     resetHighlighting();
                     updateLineHighlights();
                 });
@@ -1360,4 +1429,5 @@
         initialize();
     </script>
 </body>
+
 </html>
